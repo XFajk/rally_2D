@@ -26,9 +26,8 @@ impl ShapeParticles {
     pub fn draw(&mut self, dt: f32, operation: fn(x: &mut (Vec2, Vec2, f32, f32, Color), d: f32)) {
         match self.shape_type {
             Shapes::Circle => {
-                let mut index: usize = 0;
-                for _i in 0..self.objects.len() {
-                    let particle: &mut (Vec2, Vec2, f32, f32, Color) = &mut self.objects[index];
+                let mut x: usize = 0;
+                for particle in self.objects.iter_mut() {
 
                     // logic part
                     particle.0.x += particle.1.x * dt;
@@ -41,16 +40,16 @@ impl ShapeParticles {
 
                     // removing the particle form the self.objects vector
                     if particle.2 <= 0.0 {
-                        self.objects.pop();
-                        index -= 1;
+                        x += 1;
                     }
-                    index += 1;
+                }
+                for _i in 0..x {
+                    self.objects.pop();
                 }
             }
             Shapes::Rectangle => {
-                let mut index: usize = 0;
-                for _i in 0..self.objects.len() {
-                    let particle: &mut (Vec2, Vec2, f32, f32, Color) = &mut self.objects[index];
+                let mut x: usize = 0;
+                for particle in self.objects.iter_mut() {
 
                     // logic part
                     particle.0.x += particle.1.x * dt;
@@ -63,16 +62,16 @@ impl ShapeParticles {
 
                     // removing the particle form the self.objects vector
                     if particle.2 <= 0.0 {
-                        self.objects.pop();
-                        index -= 1;
+                        x += 1;
                     }
-                    index += 1;
+                }
+                for _i in 0..x {
+                    self.objects.pop();
                 }
             }
             Shapes::Hexagon => {
-                let mut index: usize = 0;
-                for _i in 0..self.objects.len() - 1 {
-                    let particle: &mut (Vec2, Vec2, f32, f32, Color) = &mut self.objects[index];
+                let mut x: usize = 0;
+                for particle in self.objects.iter_mut() {
 
                     // logic part
                     particle.0.x += particle.1.x * dt;
@@ -89,10 +88,11 @@ impl ShapeParticles {
 
                     // removing the particle form the self.objects vector
                     if particle.2 <= 0.0 {
-                        self.objects.pop();
-                        index -= 1;
+                        x += 1;
                     }
-                    index -= 1;
+                }
+                for _i in 0..x {
+                    self.objects.pop();
                 }
             }
         }

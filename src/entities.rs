@@ -2,17 +2,27 @@ use macroquad::prelude::*;
 use crate::effects::{ShapeParticles, Shapes, default_operation};
 use crate::rand::*;
 
+enum CarState {
+    NotBreaking,
+    GoingToBreak,
+    Breaking,
+}
+
 pub struct Car {
     pub vel: f32,
     pub max_vel: f32,
     pub acceleration: f32,
     pub angle: f32,
     pub direction: f32,
-    particle_direction: f32,
     pub max_direction: f32,
     pub particles: ShapeParticles,
 
-    pub pos: Vec2
+    pub pos: Vec2,
+
+    car_state: CarState,
+    breaking_speed: f32,
+    particle_direction: f32,
+    car_angle: f32
 }
 
 impl Car {
@@ -25,26 +35,42 @@ impl Car {
             pos,
             direction: angle,
             max_direction: 30.0,
-            particles: ShapeParticles::new(Shapes::Circle, 0.0),
-            particle_direction: angle-180.0
+            particles: ShapeParticles::new(Shapes::Hexagon, 0.0),
+            particle_direction: angle-180.0,
+            breaking_speed: 0.1,
+            car_angle: angle,
+            car_state: CarState::NotBreaking
         }
     }
 
     pub fn update(&mut self, dt: f32) {
 
-        // movement
-        if is_key_down(KeyCode::W) && self.vel < self.max_vel {
-            self.vel += self.acceleration * dt;
-        }
-        else if !is_key_down(KeyCode::W) && self.vel > 0.1 {
-            self.vel -= self.acceleration*dt;
-        }
+        // movement and rotation
+        match self.car_state {
+            CarState::NotBreaking => {
+                if is_key_down(KeyCode::W) && self.vel < self.max_vel {                
+                    self.vel += self.acceleration * dt;
+                }
+                else if !is_key_down(KeyCode::W) && self.vel > 0.1 {
+                    self.vel -= self.acceleration*dt;
+                }
 
-        if is_key_down(KeyCode::S) && self.vel > -self.max_vel {
-            self.vel -= self.acceleration * dt;
-        }
-        else if !is_key_down(KeyCode::S) && self.vel < -0.1 {
-            self.vel += self.acceleration*dt;
+                if is_key_down(KeyCode::S) && self.vel > -self.max_vel {
+                    self.vel -= self.acceleration * dt;
+                }
+                else if !is_key_down(KeyCode::S) && self.vel < -0.1 {
+                    self.vel += self.acceleration*dt;
+                }
+                if is_key_down(KeyCode::A) && !(self.direction < self.angle-self.max_direction)  {
+                    self.direction -= 5.0*dt;
+                }
+                if is_key_down(KeyCode::D) && !(self.direction > self.angle+self.max_direction) {
+                    self.direction += 5.0*dt;
+                }
+                self.particle_direction = self.angle-180.0;
+
+            }
+            _ => {}
         }
 
         if self.vel != 0.0 {
@@ -54,20 +80,41 @@ impl Car {
             self.vel = 0.0;
         }
 
-        // rotation
-        if is_key_down(KeyCode::A) && !(self.direction < self.angle-self.max_direction)  {
-            self.direction -= 5.0*dt;
+        // breaking 
+        if is_key_down(KeyCode::Space) {
+            self.vel -= self.breaking_speed*dt;
+            match self.car_state {
+                CarState::NotBreaking => {
+                    self.car_state = CarState::GoingToBreak;
+                }
+                _ => {}
+            }
         }
-        if is_key_down(KeyCode::D) && !(self.direction > self.angle+self.max_direction) {
-            self.direction += 5.0*dt;
+        else if !is_key_down(KeyCode::Space) || self.vel == 0.0 {
+            self.car_state = CarState::NotBreaking;
         }
-        self.particle_direction = self.angle-180.0;
+        
+        match self.car_state {
+            CarState::NotBreaking => {
+                self.car_angle = self.angle;
+                 self.pos += Vec2::new(
+                    self.direction.to_radians().cos()*self.vel,
+                    self.direction.to_radians().sin()*self.vel
+                ) * dt;
 
-        self.pos += Vec2::new(
-            self.direction.to_radians().cos()*self.vel,
-            self.direction.to_radians().sin()*self.vel
-        ) * dt;
+            }
+            CarState::GoingToBreak => {
+                self.car_angle = self.angle;
+                self.car_state = CarState::Breaking;
+            }
+            CarState::Breaking => {
+                self.pos += Vec2::new(
+                    self.car_angle.to_radians().cos()*self.vel,
+                    self.car_angle.to_radians().sin()*self.vel
+                ) * dt;
 
+            }
+        }
     }
 
     pub fn draw(&mut self, dt: f32) {
@@ -84,8 +131,8 @@ impl Car {
                 self.pos,
                 gen_range(self.particle_direction - 40.0, self.particle_direction + 40.0),
                 gen_range(1.0, 3.0),
-                gen_range(10.0, 12.0),
-                0.2,
+                gen_range(5.0, 7.0),
+                0.1,
                 GRAY
             );
         }
