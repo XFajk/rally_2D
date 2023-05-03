@@ -8,6 +8,7 @@ pub struct Car {
     pub acceleration: f32,
     pub angle: f32,
     pub direction: f32,
+    particle_direction: f32,
     pub max_direction: f32,
     pub particles: ShapeParticles,
 
@@ -24,7 +25,8 @@ impl Car {
             pos,
             direction: angle,
             max_direction: 30.0,
-            particles: ShapeParticles::new(Shapes::Circle, 0.0)
+            particles: ShapeParticles::new(Shapes::Circle, 0.0),
+            particle_direction: angle-180.0
         }
     }
 
@@ -57,8 +59,9 @@ impl Car {
             self.direction -= 5.0*dt;
         }
         if is_key_down(KeyCode::D) && !(self.direction > self.angle+self.max_direction) {
-            self.direction += 5.0*dt
+            self.direction += 5.0*dt;
         }
+        self.particle_direction = self.angle-180.0;
 
         self.pos += Vec2::new(
             self.direction.to_radians().cos()*self.vel,
@@ -79,7 +82,7 @@ impl Car {
         if self.vel > 0.0 || self.vel < 0.0 {
             self.particles.add(
                 self.pos,
-                gen_range(self.angle - 180.0 - 40.0, self.angle - 180.0 + 40.0),
+                gen_range(self.particle_direction - 40.0, self.particle_direction + 40.0),
                 gen_range(1.0, 3.0),
                 gen_range(10.0, 12.0),
                 0.2,
@@ -92,6 +95,7 @@ impl Car {
         draw_triangle(points[0], points[1], points[2], Color::new(1.0, 0.0, 0.0, 1.0));
         draw_triangle(points[3], points[1], points[2], Color::new(1.0, 0.0, 0.0, 1.0));
         draw_line(self.pos.x, self.pos.y, self.pos.x+(self.angle).to_radians().cos()*50.0, self.pos.y+(self.angle).to_radians().sin()*50.0, 3.0, BLUE);
+        draw_line(self.pos.x, self.pos.y, self.pos.x+(self.particle_direction).to_radians().cos()*50.0, self.pos.y+(self.particle_direction).to_radians().sin()*50.0, 3.0, BLACK);
         draw_line(self.pos.x, self.pos.y, self.pos.x+(self.direction).to_radians().cos()*50.0, self.pos.y+(self.direction).to_radians().sin()*50.0, 3.0, GREEN);
     }
 }

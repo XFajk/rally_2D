@@ -2,7 +2,7 @@ mod entities;
 mod effects;
 
 use macroquad::prelude::*;
-use crate::rand::*;
+
 #[macroquad::main(window_conf())]
 async fn main() {
 
@@ -41,6 +41,7 @@ async fn main() {
                 (String::from("ANGLE"), car.angle.to_string()),
                 (String::from("DIRECTION"), car.direction.to_string()),
                 (String::from("VELOCITY"), car.vel.to_string()),
+                (String::from("PARTICLE_AMOUNT"), car.particles.objects.len().to_string()),
             ]);
         }
         next_frame().await;
