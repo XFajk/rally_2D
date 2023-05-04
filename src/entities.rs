@@ -167,7 +167,11 @@ impl Car {
                     Vec2::new(points[index].x+(self.direction-30.0).to_radians().cos()*8.0, points[index].y+(self.direction-30.0).to_radians().sin()*8.0),
                     Vec2::new(points[index].x+(self.direction+160.0).to_radians().cos()*8.0, points[index].y+(self.direction+160.0).to_radians().sin()*8.0),
                     Vec2::new(points[index].x+(self.direction-160.0).to_radians().cos()*8.0, points[index].y+(self.direction-160.0).to_radians().sin()*8.0)
+                        
                 ];
+                //draw_line();
+                draw_triangle(wheel[0]+3.0, wheel[1]+3.0, wheel[2]+3.0, BLACK);
+                draw_triangle(wheel[3]+3.0, wheel[1]+3.0, wheel[2]+3.0, BLACK);
                 draw_triangle(wheel[0], wheel[1], wheel[2], GRAY);
                 draw_triangle(wheel[3], wheel[1], wheel[2], GRAY);
                 index += 1;
