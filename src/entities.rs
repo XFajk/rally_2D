@@ -148,10 +148,43 @@ impl Car {
             Vec2::new(self.pos.x+(self.angle-135.0).to_radians().cos()*30.0, self.pos.y+(self.angle-135.0).to_radians().sin()*30.0)
         ];
 
+        let mut front_wheel_points: [[Vec2; 4]; 2] = [[Vec2::new(self.pos.x, self.pos.y); 4]; 2]; 
+        let mut back_wheel_points: [[Vec2; 4]; 2] = [[Vec2::new(self.pos.x, self.pos.y); 4]; 2];
+        
+
         self.particles.draw(dt, default_operation);
+
         // draw the shadow of a car
         draw_triangle(points[0]+3.0, points[1]+3.0, points[2]+3.0, BLACK);
         draw_triangle(points[3]+3.0, points[1]+3.0, points[2]+3.0, BLACK);
+
+        // draw wheels
+        {
+            let mut index: usize = 0;
+            for wheel in front_wheel_points.iter_mut() {
+                *wheel = [
+                    Vec2::new(points[index].x+(self.direction+30.0).to_radians().cos()*8.0, points[index].y+(self.direction+30.0).to_radians().sin()*8.0),
+                    Vec2::new(points[index].x+(self.direction-30.0).to_radians().cos()*8.0, points[index].y+(self.direction-30.0).to_radians().sin()*8.0),
+                    Vec2::new(points[index].x+(self.direction+160.0).to_radians().cos()*8.0, points[index].y+(self.direction+160.0).to_radians().sin()*8.0),
+                    Vec2::new(points[index].x+(self.direction-160.0).to_radians().cos()*8.0, points[index].y+(self.direction-160.0).to_radians().sin()*8.0)
+                ];
+                draw_triangle(wheel[0], wheel[1], wheel[2], GRAY);
+                draw_triangle(wheel[3], wheel[1], wheel[2], GRAY);
+                index += 1;
+            }
+        }
+        {
+            let mut index: usize = 2;
+            for wheel in back_wheel_points.iter_mut() {
+                *wheel = [
+                    Vec2::new(points[index].x+(self.angle+45.0).to_radians().cos()*5.0, points[index].y+(self.angle+45.0).to_radians().sin()*5.0),
+                    Vec2::new(points[index].x+(self.angle-45.0).to_radians().cos()*5.0, points[index].y+(self.angle-45.0).to_radians().sin()*5.0),
+                    Vec2::new(points[index].x+(self.angle+135.0).to_radians().cos()*5.0, points[index].y+(self.angle+135.0).to_radians().sin()*5.0),
+                    Vec2::new(points[index].x+(self.angle-135.0).to_radians().cos()*5.0, points[index].y+(self.angle-135.0).to_radians().sin()*5.0)
+                ];
+                index += 1;
+            }
+        }
 
         // draw the car
         draw_triangle(points[0], points[1], points[2], Color::new(1.0, 0.0, 0.0, 1.0));
