@@ -1,5 +1,6 @@
 mod entities;
 mod effects;
+mod utils;
 
 use macroquad::prelude::*;
 
