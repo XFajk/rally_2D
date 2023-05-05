@@ -43,6 +43,7 @@ async fn main() {
                 (String::from("DIRECTION"), car.direction.to_string()),
                 (String::from("VELOCITY"), car.vel.to_string()),
                 (String::from("PARTICLE_AMOUNT"), car.particles.objects.len().to_string()),
+                (String::from("BACKWARD ANGLE"), (car.direction+(((car.direction-car.angle)/(car.direction-car.angle).abs())*270.0)).to_string())
             ]);
         }
         next_frame().await;

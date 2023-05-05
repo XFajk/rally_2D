@@ -14,11 +14,13 @@ pub struct Car {
     pub acceleration: f32,
     pub angle: f32,
     pub direction: f32,
+    pub back_direction: f32,
     pub max_direction: f32,
     pub particles: ShapeParticles,
 
     pub pos: Vec2,
 
+    angle_step: f32,
     car_state: CarState,
     breaking_speed: f32,
     particle_direction: f32,
@@ -34,11 +36,13 @@ impl Car {
             angle,
             pos,
             direction: angle,
+            back_direction: angle-180.0,
             max_direction: 30.0,
             particles: ShapeParticles::new(Shapes::Hexagon, 0.0),
             particle_direction: angle-180.0,
             breaking_speed: 0.1,
             car_angle: angle,
+            angle_step: 5.0,
             car_state: CarState::NotBreaking,
         }
     }
@@ -48,6 +52,7 @@ impl Car {
         // movement and rotation
         match self.car_state {
             CarState::NotBreaking => {
+                // movement forward
                 if is_key_down(KeyCode::W) && self.vel < self.max_vel {                
                     self.vel += self.acceleration * dt;
                 }
@@ -55,26 +60,56 @@ impl Car {
                     self.vel -= self.acceleration*dt;
                 }
 
+                // movement backward
                 if is_key_down(KeyCode::S) && self.vel > -self.max_vel {
                     self.vel -= self.acceleration * dt;
                 }
                 else if !is_key_down(KeyCode::S) && self.vel < -0.1 {
                     self.vel += self.acceleration*dt;
                 }
+
+                // rotation
                 if is_key_down(KeyCode::A) && !(self.direction < self.angle-self.max_direction)  {
-                    self.direction -= 5.0*dt;
+                    self.direction -= self.angle_step*dt;
                 }
+                else if is_key_down(KeyCode::A) && (self.direction < self.angle-self.max_direction-self.angle_step) {
+                    self.direction = self.angle-self.max_direction;
+                }
+
                 if is_key_down(KeyCode::D) && !(self.direction > self.angle+self.max_direction) {
-                    self.direction += 5.0*dt;
+                    self.direction += self.angle_step*dt;
                 }
+                else if is_key_down(KeyCode::D) && (self.direction > self.angle+self.max_direction+self.angle_step) {
+                    self.direction = self.angle+self.max_direction;
+                }
+
+                if is_key_down(KeyCode::A) && !(self.back_direction > self.angle-180.0+self.max_direction)  {
+                    self.back_direction += self.angle_step*dt;
+                }
+                else if is_key_down(KeyCode::A) && (self.back_direction > self.angle-180.0+self.max_direction+self.angle_step) {
+                    self.back_direction = self.angle-180.0+self.max_direction
+                }
+
+                if is_key_down(KeyCode::D) && !(self.back_direction < self.angle-180.0-self.max_direction) {
+                    self.back_direction -= self.angle_step*dt;
+                }
+                else if is_key_down(KeyCode::D) && (self.back_direction < self.angle-180.0-self.max_direction-self.angle_step) {
+                    self.back_direction = self.angle-180.0-self.max_direction;
+                }
+
                 self.particle_direction = self.angle-180.0;
+
 
             }
             _ => {}
         }
 
-        if self.vel != 0.0 {
-            self.angle += ((self.direction - self.angle) / 10.0)*dt;
+        // rotates the angle
+        if self.vel > 0.0 {
+            self.angle += (self.direction - self.angle)/10.0*dt;
+        }
+        else if self.vel < 0.0 {
+            self.angle += ((self.back_direction+180.0) - self.angle)/10.0*dt;
         }
         if self.vel < 0.1 && -0.1 < self.vel {
             self.vel = 0.0;
@@ -103,11 +138,10 @@ impl Car {
                         self.direction.to_radians().sin()*self.vel
                     ) * dt;
                 }
-                else if self.vel <= -0.1 {
+                else if self.vel < 0.0 {
                     self.pos += Vec2::new(
-                        (((self.direction-self.angle))).to_radians().cos()*(self.vel*-1.0),
-                        (((self.direction-self.angle))).to_radians().sin()*(self.vel*-1.0)
-                
+                        self.back_direction.to_radians().cos()*(self.vel*-1.0),
+                        self.back_direction.to_radians().sin()*(self.vel*-1.0)
                     ) * dt;
                 }
                 if self.vel > 0.0 || self.vel < 0.0 {
@@ -208,9 +242,9 @@ impl Car {
         draw_triangle(points[0], points[1], points[2], Color::new(1.0, 0.0, 0.0, 1.0));
         draw_triangle(points[3], points[1], points[2], Color::new(1.0, 0.0, 0.0, 1.0));
         
-        // draw all the diffrent angles
-        //draw_line(self.pos.x, self.pos.y, self.pos.x+(self.angle).to_radians().cos()*50.0, self.pos.y+(self.angle).to_radians().sin()*50.0, 3.0, BLUE);
-        //draw_line(self.pos.x, self.pos.y, self.pos.x+(self.particle_direction).to_radians().cos()*50.0, self.pos.y+(self.particle_direction).to_radians().sin()*50.0, 3.0, BLACK);
-        //draw_line(self.pos.x, self.pos.y, self.pos.x+(self.direction).to_radians().cos()*50.0, self.pos.y+(self.direction).to_radians().sin()*50.0, 3.0, GREEN);
+        // draw all the different angles
+        draw_line(self.pos.x, self.pos.y, self.pos.x+self.back_direction.to_radians().cos()*50.0, self.pos.y+self.back_direction.to_radians().sin()*50.0, 3.0, BLUE);
+        draw_line(self.pos.x, self.pos.y, self.pos.x+(self.angle).to_radians().cos()*50.0, self.pos.y+(self.angle).to_radians().sin()*50.0, 3.0, BLACK);
+        draw_line(self.pos.x, self.pos.y, self.pos.x+(self.direction).to_radians().cos()*50.0, self.pos.y+(self.direction).to_radians().sin()*50.0, 3.0, GREEN);
     }
 }
