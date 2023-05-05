@@ -97,10 +97,19 @@ impl Car {
         match self.car_state {
             CarState::NotBreaking => {
                 self.car_angle = self.angle;
-                 self.pos += Vec2::new(
-                    self.direction.to_radians().cos()*self.vel,
-                    self.direction.to_radians().sin()*self.vel
-                ) * dt;
+                if self.vel >= 0.1 {
+                    self.pos += Vec2::new(
+                        self.direction.to_radians().cos()*self.vel,
+                        self.direction.to_radians().sin()*self.vel
+                    ) * dt;
+                }
+                else if self.vel <= -0.1 {
+                    self.pos += Vec2::new(
+                        (((self.direction-self.angle))).to_radians().cos()*(self.vel*-1.0),
+                        (((self.direction-self.angle))).to_radians().sin()*(self.vel*-1.0)
+                
+                    ) * dt;
+                }
                 if self.vel > 0.0 || self.vel < 0.0 {
                      self.particles.add(
                         self.pos,
@@ -161,6 +170,7 @@ impl Car {
         // draw wheels
         {
             let mut index: usize = 0;
+            let offset: f32 = 2.0;
             for wheel in front_wheel_points.iter_mut() {
                 *wheel = [
                     Vec2::new(points[index].x+(self.direction+30.0).to_radians().cos()*8.0, points[index].y+(self.direction+30.0).to_radians().sin()*8.0),
@@ -169,23 +179,27 @@ impl Car {
                     Vec2::new(points[index].x+(self.direction-160.0).to_radians().cos()*8.0, points[index].y+(self.direction-160.0).to_radians().sin()*8.0)
                         
                 ];
-                //draw_line();
-                draw_triangle(wheel[0]+3.0, wheel[1]+3.0, wheel[2]+3.0, BLACK);
-                draw_triangle(wheel[3]+3.0, wheel[1]+3.0, wheel[2]+3.0, BLACK);
-                draw_triangle(wheel[0], wheel[1], wheel[2], GRAY);
-                draw_triangle(wheel[3], wheel[1], wheel[2], GRAY);
+                draw_triangle(wheel[0]+3.0+offset, wheel[1]+3.0+offset, wheel[2]+3.0+offset, BLACK);
+                draw_triangle(wheel[3]+3.0+offset, wheel[1]+3.0+offset, wheel[2]+3.0+offset, BLACK);
+                draw_triangle(wheel[0]+offset, wheel[1]+offset, wheel[2]+offset, GRAY);
+                draw_triangle(wheel[3]+offset, wheel[1]+offset, wheel[2]+offset, GRAY);
                 index += 1;
             }
         }
         {
             let mut index: usize = 2;
+            let offset: f32 = 2.0;
             for wheel in back_wheel_points.iter_mut() {
                 *wheel = [
-                    Vec2::new(points[index].x+(self.angle+45.0).to_radians().cos()*5.0, points[index].y+(self.angle+45.0).to_radians().sin()*5.0),
-                    Vec2::new(points[index].x+(self.angle-45.0).to_radians().cos()*5.0, points[index].y+(self.angle-45.0).to_radians().sin()*5.0),
-                    Vec2::new(points[index].x+(self.angle+135.0).to_radians().cos()*5.0, points[index].y+(self.angle+135.0).to_radians().sin()*5.0),
-                    Vec2::new(points[index].x+(self.angle-135.0).to_radians().cos()*5.0, points[index].y+(self.angle-135.0).to_radians().sin()*5.0)
+                    Vec2::new(points[index].x+(self.angle+30.0).to_radians().cos()*8.0, points[index].y+(self.angle+30.0).to_radians().sin()*8.0),
+                    Vec2::new(points[index].x+(self.angle-30.0).to_radians().cos()*8.0, points[index].y+(self.angle-30.0).to_radians().sin()*8.0),
+                    Vec2::new(points[index].x+(self.angle+160.0).to_radians().cos()*8.0, points[index].y+(self.angle+160.0).to_radians().sin()*8.0),
+                    Vec2::new(points[index].x+(self.angle-160.0).to_radians().cos()*8.0, points[index].y+(self.angle-160.0).to_radians().sin()*8.0)
                 ];
+                draw_triangle(wheel[0]+3.0+offset, wheel[1]+3.0+offset, wheel[2]+3.0+offset, BLACK);
+                draw_triangle(wheel[3]+3.0+offset, wheel[1]+3.0+offset, wheel[2]+3.0+offset, BLACK);
+                draw_triangle(wheel[0]+offset, wheel[1]+offset, wheel[2]+offset, GRAY);
+                draw_triangle(wheel[3]+offset, wheel[1]+offset, wheel[2]+offset, GRAY);
                 index += 1;
             }
         }
