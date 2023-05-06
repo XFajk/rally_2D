@@ -58,6 +58,7 @@ impl Car {
                 }
                 else if !is_key_down(KeyCode::W) && self.vel > 0.1 {
                     self.vel -= self.acceleration*dt;
+                    self.back_direction = self.angle-180.0;
                 }
 
                 // movement backward
@@ -66,6 +67,7 @@ impl Car {
                 }
                 else if !is_key_down(KeyCode::S) && self.vel < -0.1 {
                     self.vel += self.acceleration*dt;
+                    self.direction = self.angle;
                 }
 
                 // rotation
@@ -115,9 +117,14 @@ impl Car {
             self.vel = 0.0;
         }
 
-        // breaking 
+        // breaking
         if is_key_down(KeyCode::Space) {
-            self.vel -= self.breaking_speed*dt;
+            if self.vel > 0.0 {
+                self.vel -= self.breaking_speed * dt;
+            }
+            else if self.vel < 0.0 {
+                self.vel += self.breaking_speed * dt;
+            }
             match self.car_state {
                 CarState::NotBreaking => {
                     self.car_state = CarState::GoingToBreak;
@@ -161,7 +168,7 @@ impl Car {
                 self.car_state = CarState::Breaking;
             }
             CarState::Breaking => {
-                self.vel = self.vel.abs();
+                self.vel = self.vel;
                 self.pos += Vec2::new(
                     self.car_angle.to_radians().cos()*self.vel,
                     self.car_angle.to_radians().sin()*self.vel
@@ -180,6 +187,26 @@ impl Car {
                 }
             }
         }
+
+        // caping the angles
+        if self.angle > 360.0 {
+            self.angle -= 360.0;
+            self.direction -= 360.0;
+            self.back_direction -= 360.0;
+        }
+        else if self.angle < -360.0 {
+            self.angle += 360.0;
+            self.direction += 360.0;
+            self.back_direction += 360.0;
+        }
+
+        if self.car_angle > 360.0 {
+            self.car_angle -= 360.0;
+        }
+        else if self.back_direction < -360.0 {
+            self.car_angle += 360.0;
+        }
+
     }
 
     pub fn draw(&mut self, dt: f32) {
@@ -243,8 +270,8 @@ impl Car {
         draw_triangle(points[3], points[1], points[2], Color::new(1.0, 0.0, 0.0, 1.0));
         
         // draw all the different angles
-        draw_line(self.pos.x, self.pos.y, self.pos.x+self.back_direction.to_radians().cos()*50.0, self.pos.y+self.back_direction.to_radians().sin()*50.0, 3.0, BLUE);
-        draw_line(self.pos.x, self.pos.y, self.pos.x+(self.angle).to_radians().cos()*50.0, self.pos.y+(self.angle).to_radians().sin()*50.0, 3.0, BLACK);
-        draw_line(self.pos.x, self.pos.y, self.pos.x+(self.direction).to_radians().cos()*50.0, self.pos.y+(self.direction).to_radians().sin()*50.0, 3.0, GREEN);
+        // draw_line(self.pos.x, self.pos.y, self.pos.x+self.back_direction.to_radians().cos()*50.0, self.pos.y+self.back_direction.to_radians().sin()*50.0, 3.0, BLUE);
+        // draw_line(self.pos.x, self.pos.y, self.pos.x+(self.angle).to_radians().cos()*50.0, self.pos.y+(self.angle).to_radians().sin()*50.0, 3.0, BLACK);
+        // draw_line(self.pos.x, self.pos.y, self.pos.x+(self.direction).to_radians().cos()*50.0, self.pos.y+(self.direction).to_radians().sin()*50.0, 3.0, GREEN);
     }
 }
